@@ -1,0 +1,78 @@
+local unity = CS.UnityEngine
+local scene = "Scene"
+local AssetsLoaded = false
+
+function Begin()
+	--mono:LoadAssetbundle(unity.Application.dataPath.."/"..scene..".unity3d")
+	mono:LoadAssetbundle(unity.Application.dataPath.."/AssetBundles/NewResource.assetbundle")
+	--mono:LoadScene("NewScene")
+end
+
+
+function LoadFinished(scenename)
+	print("LoadFinished " .. scenename)
+	--GameManagerPref = unity.Resources.Load("GameManager")
+	UIPref = mono.assetsbundle:LoadAsset("UIPrefab")
+	PlayerPref = mono.assetsbundle:LoadAsset("Player2")
+	ElephantGeneratorPref = mono.assetsbundle:LoadAsset("ElephantGenerator")
+	BunnyBearGeneratorPref = mono.assetsbundle:LoadAsset("BunnyBearGenerator")
+	
+	if(UIPref ~= nil)
+	then
+		print("has")
+		local inst = unity.GameObject.Instantiate(UIPref)
+		local trigger = inst:GetComponent("Score").trig
+		local myclick = unity.EventSystems.EventTrigger.Entry()
+		myclick.eventID = unity.EventSystems.EventTriggerType.PointerClick
+		myclick.callback:AddListener(reLoad)
+		trigger.triggers:Add(myclick)
+	end
+	
+	playerspawn = unity.GameObject.FindGameObjectWithTag("PlayerPos")
+	bunnybearspawn = unity.GameObject.FindGameObjectsWithTag("BunnyBearPos")
+	elephantspawn = unity.GameObject.FindGameObjectsWithTag("ElephantPos")
+	if(PlayerPref ~= nil and playerspawn ~= nil)
+	then
+		unity.GameObject.Instantiate(PlayerPref,playerspawn.transform.position,playerspawn.transform.rotation)
+	end
+	
+	if(BunnyBearGeneratorPref ~= nil and bunnybearspawn.Length > 0)
+	then
+		for i = 0,bunnybearspawn.Length -1,1 do
+			unity.GameObject.Instantiate(BunnyBearGeneratorPref,bunnybearspawn[i].transform.position,bunnybearspawn[i].transform.rotation)
+		end
+	end
+	
+	if(ElephantGeneratorPref ~= nil and elephantspawn.Length > 0)
+	then
+		for i = 0,elephantspawn.Length -1,1 do
+			unity.GameObject.Instantiate(ElephantGeneratorPref,elephantspawn[i].transform.position,elephantspawn[i].transform.rotation)
+		end
+	end
+	
+			
+end
+
+function bundleloadfinished(path,bundle)
+
+	if(not AssetsLoaded)
+	then
+		AssetsLoaded = true
+		mono.assetsbundle = bundle
+		mono:LoadAssetbundle(unity.Application.dataPath.."/AssetBundles/"..scene..".unity3d")
+	else
+		mono.scenebundle = bundle
+		mono:LoadScene("NewScene")
+	end
+end
+
+function reLoad(data)
+	mono.scenebundle:Unload(false)
+	if(scene == "Scene")
+	then
+		scene = "Scene2"
+	else
+		scene = "Scene"
+	end
+	mono:LoadAssetbundle(unity.Application.dataPath.."/AssetBundles/"..scene..".unity3d")
+end
